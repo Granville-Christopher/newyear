@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Happy New Year!</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Montserrat', sans-serif;
@@ -26,6 +26,8 @@
             z-index: -100;
             object-fit: cover;
             filter: brightness(0.6);
+            /* Prevents weird flickering on some browsers during loop */
+            backface-visibility: hidden;
         }
 
         .glass {
@@ -58,21 +60,53 @@
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-20px); }
         }
+
+        /* Custom style for the "is" connector */
+        .is-connector {
+            color: #ffd700;
+            font-size: 2rem;
+            margin: 0.5rem 0;
+            font-weight: 700;
+            font-family: 'Dancing Script', cursive;
+            display: block;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        /* Fixed Message Box Z-Index and Position */
+        #messageBox {
+            z-index: 100; /* Ensure it's above the main card */
+            bottom: 5rem; /* Lifted slightly higher */
+        }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen">
 
-    <!-- Background Video -->
-    <video autoplay muted loop id="video-background" playsinline>
-        <source src="https://www.pexels.com/download/video/1508216/" type="video/mp4">
+    <!-- Background Video with local path -->
+    <video 
+        autoplay 
+        muted 
+        loop 
+        id="video-background" 
+        playsinline 
+        disablePictureInPicture 
+        preload="auto"
+        webkit-playsinline>
+        <!-- Replace 'your-video.mp4' with the actual filename of your video in your local folder -->
+        <source src="vid/854348-hd_1280_720_30fps.mp4" type="video/mp4">
         Your browser does not support the video tag.
     </video>
 
     <!-- Content Overlay -->
     <div class="z-10 text-center px-6">
         <div class="glass p-10 md:p-20 shadow-2xl floating">
+            <!-- Company Name -->
+            <h3 class="text-yellow-500 text-lg md:text-xl font-bold tracking-[0.2em] mb-1 uppercase">Grantech IT Solutions</h3>
+            
+            <!-- Custom Styled "is" -->
+            <span class="is-connector">is</span>
+            
             <h2 class="text-white text-xl md:text-2xl uppercase tracking-widest mb-4 font-light">Wishing You A</h2>
-            <h1 class="text-6xl md:text-9xl font-black text-shimmer mb-6 drop-shadow-lg">
+            <h1 class="text-6xl md:text-9xl font-black text-shimmer mb-6 drop-shadow-lg leading-tight">
                 HAPPY<br>NEW YEAR
             </h1>
             <p class="text-white text-lg md:text-xl max-w-lg mx-auto leading-relaxed font-light">
@@ -88,8 +122,8 @@
         </div>
     </div>
 
-    <!-- Simple Message Box for interactions -->
-    <div id="messageBox" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 glass px-6 py-3 text-white opacity-0 transition-opacity duration-500 pointer-events-none">
+    <!-- Improved Message Box Positioning -->
+    <div id="messageBox" class="fixed left-1/2 text-sm transform -translate-x-1/2 glass px-2 py-4 text-white opacity-0 transition-opacity duration-500 pointer-events-none md:text-xl font-bold border-yellow-500/50">
         Wishing you the best! ✨
     </div>
 
@@ -97,22 +131,55 @@
         function celebrate() {
             const msg = document.getElementById('messageBox');
             msg.style.opacity = '1';
-            
-            // Basic sound-like visual effect or secondary animation could go here
             setTimeout(() => {
                 msg.style.opacity = '0';
             }, 3000);
         }
 
-        // Handle video playback errors (some browsers block autoplay without interaction)
-        window.addEventListener('load', () => {
-            const video = document.getElementById('video-background');
-            const playPromise = video.play();
+        const video = document.getElementById('video-background');
 
+        // Stronger enforcement of video playback
+        const forcePlay = () => {
+            if (video.paused) {
+                video.play().catch(() => {
+                    // Browsers sometimes block play until a user interaction occurs
+                });
+            }
+        };
+
+        // Attempt to play every 500ms if paused
+        const playInterval = setInterval(forcePlay, 500);
+
+        // Prevent the "pause" event from actually stopping the video
+        video.addEventListener('pause', () => {
+            video.play();
+        });
+
+        // Ensure video plays when the page becomes visible again (tab switching)
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                video.play();
+            }
+        });
+
+        // Initial play trigger
+        window.addEventListener('load', () => {
+            // Force volume to 0 just in case
+            video.muted = true;
+            const playPromise = video.play();
+            
             if (playPromise !== undefined) {
-                playPromise.catch(error => {
-                    console.log("Autoplay was prevented. Video will play on first click.");
-                    document.body.addEventListener('click', () => video.play(), { once: true });
+                playPromise.catch(() => {
+                    // If autoplay is blocked, trigger play on any interaction with the document
+                    const startVideo = () => {
+                        video.play();
+                        document.removeEventListener('click', startVideo);
+                        document.removeEventListener('touchstart', startVideo);
+                        document.removeEventListener('keydown', startVideo);
+                    };
+                    document.addEventListener('click', startVideo);
+                    document.addEventListener('touchstart', startVideo);
+                    document.addEventListener('keydown', startVideo);
                 });
             }
         });
