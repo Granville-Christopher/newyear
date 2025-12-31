@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy New Year!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #000;
+        }
+
+        #video-background {
+            position: fixed;
+            right: 0;
+            bottom: 0;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            z-index: -100;
+            object-fit: cover;
+            filter: brightness(0.6);
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+        }
+
+        .text-shimmer {
+            background: linear-gradient(to right, #ffd700, #fff, #ffd700);
+            background-size: 200% auto;
+            color: transparent;
+            -webkit-background-clip: text;
+            background-clip: text;
+            animation: shimmer 3s linear infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 0% center; }
+            100% { background-position: 200% center; }
+        }
+
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+
+    <!-- Background Video -->
+    <video autoplay muted loop id="video-background" playsinline>
+        <source src="https://www.pexels.com/download/video/1508216/" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <!-- Content Overlay -->
+    <div class="z-10 text-center px-6">
+        <div class="glass p-10 md:p-20 shadow-2xl floating">
+            <h2 class="text-white text-xl md:text-2xl uppercase tracking-widest mb-4 font-light">Wishing You A</h2>
+            <h1 class="text-6xl md:text-9xl font-black text-shimmer mb-6 drop-shadow-lg">
+                HAPPY<br>NEW YEAR
+            </h1>
+            <p class="text-white text-lg md:text-xl max-w-lg mx-auto leading-relaxed font-light">
+                May your 2026 be filled with joy, prosperity, and endless possibilities. 
+                Cheers to a fresh start!
+            </p>
+            
+            <div class="mt-10 flex flex-wrap justify-center gap-4">
+                <button onclick="celebrate()" class="px-8 py-3 bg-yellow-500 hover:bg-yellow-400 text-black font-bold rounded-full transition-all transform hover:scale-105 active:scale-95 shadow-lg">
+                    Spark Joy
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Simple Message Box for interactions -->
+    <div id="messageBox" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 glass px-6 py-3 text-white opacity-0 transition-opacity duration-500 pointer-events-none">
+        Wishing you the best! ✨
+    </div>
+
+    <script>
+        function celebrate() {
+            const msg = document.getElementById('messageBox');
+            msg.style.opacity = '1';
+            
+            // Basic sound-like visual effect or secondary animation could go here
+            setTimeout(() => {
+                msg.style.opacity = '0';
+            }, 3000);
+        }
+
+        // Handle video playback errors (some browsers block autoplay without interaction)
+        window.addEventListener('load', () => {
+            const video = document.getElementById('video-background');
+            const playPromise = video.play();
+
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.log("Autoplay was prevented. Video will play on first click.");
+                    document.body.addEventListener('click', () => video.play(), { once: true });
+                });
+            }
+        });
+    </script>
+</body>
+</html>
